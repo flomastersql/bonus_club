@@ -13,10 +13,18 @@ namespace bonus_club
         static string str = "uid=crm_usr;pwd=zTQrW4HTPA;Initial Catalog=Vlad.CRM;Data Source=192.168.100.5";
 
 
-        public static DataTable get_alarm_pds_pays()
+        public static DataTable get_alarm_pds_users()
         {
+            // вариант: 
+            // Здесь важно для СБ видеть начисления бонусов на одну карту 2 и более раза за одни день по всем ресторанам
             SqlDataAdapter sda = new SqlDataAdapter(
-                "	select CardId, count(*) from Orders where RkOrderDate > GETDATE() - 2 group by CardId having count(*) > 1	 "
+               " select cl.FirstName, cl.LastName, cl.Birthday, o.CardId from( " +
+               " select CardId " +
+               " from Orders " +
+               " where CONVERT(varchar, RkOrderDate, 101) = CONVERT(varchar, GETDATE(), 101) " +
+               " group by CardId having count(*) > 1 " +
+               " ) o join Cards c on o.CardId = c.Id " +
+               " join Clients cl on c.ClientId = cl.id "
 
                 , str);
 
