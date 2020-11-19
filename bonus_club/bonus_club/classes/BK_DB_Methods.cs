@@ -21,7 +21,7 @@ namespace bonus_club
                " select cl.FirstName, cl.LastName, cl.Birthday, o.CardId from( " +
                " select CardId " +
                " from Orders " +
-               " where CONVERT(varchar, RkOrderDate, 101) = CONVERT(varchar, GETDATE(), 101) " +
+               " where CONVERT(varchar, RkOrderDate, 101) = CONVERT(varchar, GETDATE()- " + Program.datediff + ", 101) " +
                " group by CardId having count(*) > 1 " +
                " ) o join Cards c on o.CardId = c.Id " +
                " join Clients cl on c.ClientId = cl.id "
@@ -32,6 +32,23 @@ namespace bonus_club
             sda.Fill(DT);
             return DT;
         }
+
+
+        public static DataTable get_bk_orders_of_users(string cardid)
+        {
+            SqlDataAdapter sda = new SqlDataAdapter(
+            " select RkCheckNum, RkRestaurantCode, RkOrderDate, RkCheckNum,[Sum], PaidBonuses, GotBonuses, ItemCount from Orders where " +
+            "  CardId = " + cardid +
+            " and CONVERT(varchar, RkOrderDate, 101) = CONVERT(varchar, GETDATE() - " + Program.datediff + ", 101)"
+                , str);
+
+            DataTable DT = new DataTable();
+            sda.Fill(DT);
+            return DT;
+        }
+
+
+
 
     }
 }
