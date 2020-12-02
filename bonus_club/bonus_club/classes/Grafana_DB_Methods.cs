@@ -75,5 +75,99 @@ namespace bonus_club
 
             }
         }
+
+        public static List<string> get_ids_orders_observed_early(string card_id)
+        {
+
+            SqlDataAdapter sda = new SqlDataAdapter(
+               " select id ids from westrest_orders " +
+               " where [id_guest_card] = " + card_id + " and CONVERT(varchar, order_date, 101) = CONVERT(varchar, GETDATE() - " + Program.datediff + ", 101) "
+                , str);
+
+            DataTable DT = new DataTable();
+            sda.Fill(DT);
+
+            List<string> L = new List<string>();
+
+            foreach(DataRow row in DT.Rows)
+            {
+                L.Add(row[0].ToString());
+            }
+            return L;
+        }
+
+        public static void ins_order_in_grafana(string id_order, string keeper_code, string id_guest_card, string rk_check_num, DateTime order_date
+            , object check_sum, object paid_bonuses, object got_bonuses, string check_items_count
+            )
+        {
+            using (SqlConnection connection = new SqlConnection(str))
+            {
+                SqlCommand sp = new SqlCommand(
+                "	INSERT INTO [dbo].[westrest_orders]	 " +
+                "	           ([id]	 " +
+                "	           ,[id_rest]	 " +
+                "	           ,[id_guest_card]	 " +
+                "	           ,[rk_check_num]	 " +
+                "	           ,[order_date]	 " +
+                "	           ,[rest_table]	 " +
+                "	           ,[check_sum]	 " +
+                "	           ,[paid_bonuses]	 " +
+                "	           ,[got_bonuses]	 " +
+                "	           ,[check_items_count])	 " +
+                "	     VALUES	 " +
+                "	           (@id_order	 " +
+                "	           ,(select id from restaurants where keeper_code = @keeper_code)	 " +
+                "	           ,@id_guest_card " +
+                "	           ,@rk_check_num " +
+                "	           ,@order_date " +
+                "	           ,null	 " +
+                "	           ,@check_sum " +
+                "	           ,@paid_bonuses " +
+                "	           ,@got_bonuses " +
+                "	           ,@check_items_count)	 "
+
+            , connection);
+                sp.Connection.Open();
+
+                SqlParameter spar_id_order = sp.Parameters.Add("@id_order", SqlDbType.Int);
+                spar_id_order.Direction = ParameterDirection.Input;
+                spar_id_order.Value = int.Parse(id_order);
+
+                SqlParameter spar_keeper_code = sp.Parameters.Add("@keeper_code", SqlDbType.BigInt);
+                spar_keeper_code.Direction = ParameterDirection.Input;
+                spar_keeper_code.Value = int.Parse(keeper_code);
+
+                SqlParameter spar_id_guest_card = sp.Parameters.Add("@id_guest_card", SqlDbType.Int);
+                spar_id_guest_card.Direction = ParameterDirection.Input;
+                spar_id_guest_card.Value = int.Parse(id_guest_card);
+
+                SqlParameter spar_rk_check_num = sp.Parameters.Add("@rk_check_num", SqlDbType.Int);
+                spar_rk_check_num.Direction = ParameterDirection.Input;
+                spar_rk_check_num.Value = int.Parse(rk_check_num);
+
+                SqlParameter spar_order_date = sp.Parameters.Add("@order_date", SqlDbType.DateTime);
+                spar_order_date.Direction = ParameterDirection.Input;
+                spar_order_date.Value = order_date;
+
+                SqlParameter spar_check_sum  = sp.Parameters.Add("@check_sum", SqlDbType.Decimal);
+                spar_check_sum.Direction = ParameterDirection.Input;
+                spar_check_sum.Value = check_sum;
+
+                SqlParameter spar_paid_bonuses = sp.Parameters.Add("@paid_bonuses", SqlDbType.Decimal);
+                spar_paid_bonuses.Direction = ParameterDirection.Input;
+                spar_paid_bonuses.Value = paid_bonuses;
+
+                SqlParameter spar_got_bonuses = sp.Parameters.Add("@got_bonuses", SqlDbType.Decimal);
+                spar_got_bonuses.Direction = ParameterDirection.Input;
+                spar_got_bonuses.Value = got_bonuses;
+
+                SqlParameter spar_check_items_count = sp.Parameters.Add("@check_items_count", SqlDbType.Int);
+                spar_check_items_count.Direction = ParameterDirection.Input;
+                spar_check_items_count.Value = int.Parse(check_items_count);
+
+                sp.ExecuteNonQuery();
+
+            }
+        }
     }
 }

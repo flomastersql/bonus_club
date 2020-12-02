@@ -37,7 +37,7 @@ namespace bonus_club
         public static DataTable get_bk_orders_of_users(string cardid)
         {
             SqlDataAdapter sda = new SqlDataAdapter(
-            " select RkCheckNum, RkRestaurantCode, RkOrderDate, RkCheckNum,[Sum], PaidBonuses, GotBonuses, ItemCount from Orders where " +
+            " select id, RkCheckNum, RkRestaurantCode, RkOrderDate, [Sum], PaidBonuses, GotBonuses, ItemCount from Orders where " +
             "  CardId = " + cardid +
             " and CONVERT(varchar, RkOrderDate, 101) = CONVERT(varchar, GETDATE() - " + Program.datediff + ", 101)"
                 , str);
@@ -46,6 +46,8 @@ namespace bonus_club
             sda.Fill(DT);
             return DT;
         }
+
+        
 
 
 
