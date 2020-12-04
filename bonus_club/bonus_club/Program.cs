@@ -10,16 +10,9 @@ namespace bonus_club
     class Program
     {
         // кол-во дней отступить от сегодняшнего (использовать для дебага когда в текущем дне нет примеров)
-        public static string datediff = "14";
+        public static string datediff = "16";
         static void Main(string[] args)
         {
-            //Grafana_DB_Methods.ins_order_in_grafana("89996", "136070010", "6146", "200749", 
-            //    Data_Methods.date_time_from_str_sql("18.11.2020 16:59:10", false), "600,00", "300,00", "60,00", "2");
-
-            //Console.WriteLine("ggg");
-            //Console.ReadLine();
-
-
             foreach (DataRow row in BK_DB_Methods.get_alarm_pds_users().Rows)
             {
                 // если пользователь westrest нету в графане
@@ -38,28 +31,25 @@ namespace bonus_club
                         );
                 }
 
+                
+
                 //список заказов которые уже были записаны по пользователю за сегодня
                 List<string> ids_orders_observed_early = Grafana_DB_Methods.get_ids_orders_observed_early(row["CardId"].ToString());
                 //общий список заказов пользователя за день
                 DataTable DT_bk_orders_of_users = BK_DB_Methods.get_bk_orders_of_users(row["CardId"].ToString());
+
+                Console.WriteLine(row["CardId"].ToString() + " " + DT_bk_orders_of_users.Rows.Count.ToString());
+
+
                 //если было замечено меньше заказов чем сейчас
                 if (ids_orders_observed_early.Count < DT_bk_orders_of_users.Rows.Count)
-                {
-                    Console.WriteLine(row["CardId"].ToString() + " " + DT_bk_orders_of_users.Rows.Count.ToString());
+                {                    
                     //идем по общему списку заказов пользователя за сегодня
                     foreach(DataRow order in DT_bk_orders_of_users.Rows)
                     {
                         //и если текущего заказа в списке ранее замеченных - нет, то записываем его
                         if (!ids_orders_observed_early.Contains(order["id"].ToString()))
                         {
-                            //Console.WriteLine(order["id"].ToString());
-                            //Console.WriteLine(order["RkCheckNum"].ToString());
-                            //Console.WriteLine(order["RkRestaurantCode"].ToString());
-                            //Console.WriteLine(order["RkOrderDate"].ToString());
-                            //Console.WriteLine(order["Sum"].ToString());
-                            //Console.WriteLine(order["PaidBonuses"].ToString());
-                            //Console.WriteLine(order["GotBonuses"].ToString());
-                            //Console.WriteLine(order["ItemCount"].ToString());
                             Grafana_DB_Methods.ins_order_in_grafana(
                                 order["id"].ToString()
                                 , order["RkRestaurantCode"].ToString()
@@ -73,9 +63,7 @@ namespace bonus_club
                                 );
                         }
                     }
-
                 }
-
             }
             Console.ReadLine();
         }
