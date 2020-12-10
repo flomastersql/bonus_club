@@ -97,6 +97,7 @@ namespace bonus_club
         }
 
         public static void ins_order_in_grafana(string id_order, string keeper_code, string id_guest_card, string rk_check_num, DateTime order_date
+            , string rest_table
             , object check_sum, object paid_bonuses, object got_bonuses, string check_items_count
             )
         {
@@ -120,7 +121,7 @@ namespace bonus_club
                 "	           ,@id_guest_card " +
                 "	           ,@rk_check_num " +
                 "	           ,@order_date " +
-                "	           ,null	 " +
+                "	           ,@rest_table	 " +
                 "	           ,@check_sum " +
                 "	           ,@paid_bonuses " +
                 "	           ,@got_bonuses " +
@@ -165,9 +166,74 @@ namespace bonus_club
                 spar_check_items_count.Direction = ParameterDirection.Input;
                 spar_check_items_count.Value = int.Parse(check_items_count);
 
+                SqlParameter spar_rest_table = sp.Parameters.Add("@rest_table", SqlDbType.VarChar, 50);
+                spar_rest_table.Direction = ParameterDirection.Input;
+                spar_rest_table.Value = rest_table;
+
                 sp.ExecuteNonQuery();
 
             }
+        }
+
+        public static string message_data(string card_id)
+        {
+            SqlDataAdapter sda = new SqlDataAdapter(
+              "	select  1 id, 'Гость ' + fst_name + ' ' + scnd_name + ' (' + CONVERT(varchar, birthday, 104) + ')' from [westrest_clients] where id = " + card_id + " " +
+                "	union	 " +
+                "	select 2, 'Использовал БК ' + CONVERT(varchar, count(*)) + ' раза за один день: ' from [westrest_orders] where id_guest_card = " + card_id + " and CONVERT(varchar, order_date, 101) = CONVERT(varchar, GETDATE()-" + Program.datediff + ", 101)	 " +
+                "	union	 " +
+                "	select ROW_NUMBER() over(order by rk_check_num) + 2, CONVERT(varchar, ROW_NUMBER() over(order by rk_check_num)) + '. ' + r.name + ', Сумма: ' + CONVERT(varchar, check_sum)	 " +
+                "	+ ', Дата: ' + CONVERT(varchar, order_date, 104) + ' ' + CONVERT(varchar, order_date, 108)	 " +
+                "   + ', Номер чека: ' + CONVERT(varchar, rk_check_num) + ', Номер стола: ' + ISNULL(rest_table, 'Неопределен') " +
+                "	from [westrest_orders] wo join restaurants r on wo.id_rest = r.id	 " +
+                "	where wo.id_guest_card = " + card_id + "	 " +
+                "	and CONVERT(varchar, wo.order_date, 101) = CONVERT(varchar, GETDATE()-" + Program.datediff + ", 101)	 "
+
+               , str);
+
+            DataTable DT = new DataTable();
+            sda.Fill(DT);
+
+            string mess = "";
+
+            for (int i = 0; i < DT.Rows.Count; i++)
+            {
+                if (i == 0)
+                {
+                    mess += "<b>";
+                }
+                mess += DT.Rows[i][1].ToString();
+                if (i == 0)
+                {
+                    mess += "</b>";
+                }
+                mess += "<br>";
+            }
+
+            return mess;
+        }
+
+        public static DataTable get_cards_by_day()
+        {
+            SqlDataAdapter sda = new SqlDataAdapter(
+              "	select distinct id_guest_card from westrest_orders where CONVERT(varchar, order_date, 101) = CONVERT(varchar, GETDATE() - " + Program.datediff + ", 101) "
+               , str);
+
+            DataTable DT = new DataTable();
+            sda.Fill(DT);
+
+            return DT;
+        }
+
+        public static string get_rkeeper_constr(string RkRestCode)
+        {
+            SqlDataAdapter sda = new SqlDataAdapter(
+              "	select parametr_to_connect_sql_keeper from [restaurants] where keeper_code = " + RkRestCode , str);
+
+            DataTable DT = new DataTable();
+            sda.Fill(DT);
+
+            return DT.Rows[0][0].ToString();
         }
     }
 }

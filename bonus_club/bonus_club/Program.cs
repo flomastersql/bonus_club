@@ -10,9 +10,12 @@ namespace bonus_club
     class Program
     {
         // кол-во дней отступить от сегодняшнего (использовать для дебага когда в текущем дне нет примеров)
-        public static string datediff = "16";
+        public static string datediff = "1";
         static void Main(string[] args)
         {
+            //Mail.send_alarm_msg("11");
+            //Console.WriteLine("отправил");
+            //Console.ReadLine();
             foreach (DataRow row in BK_DB_Methods.get_alarm_pds_users().Rows)
             {
                 // если пользователь westrest нету в графане
@@ -55,7 +58,8 @@ namespace bonus_club
                                 , order["RkRestaurantCode"].ToString()
                                 , row["CardId"].ToString()
                                 , order["RkCheckNum"].ToString()
-                                , Data_Methods.date_time_from_str_sql("18.11.2020 16:59:10", false)
+                                , Data_Methods.date_time_from_str_sql(order["RkOrderDate"].ToString(), false)
+                                , Rkeeper_RPC_DB_Methods.get_table_by_check(order["RkCheckNum"].ToString(), order["RkRestaurantCode"].ToString())
                                 , order["Sum"].ToString()
                                 , order["PaidBonuses"].ToString()
                                 , order["GotBonuses"].ToString()
@@ -63,9 +67,11 @@ namespace bonus_club
                                 );
                         }
                     }
+                    //send mail here                    
                 }
             }
-            Console.ReadLine();
+            //Console.ReadLine();
+            Mail.send_alarm_msg();
         }
     }
 }

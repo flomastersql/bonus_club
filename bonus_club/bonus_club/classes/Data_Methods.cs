@@ -34,8 +34,26 @@ namespace bonus_club
                    year, month, day);
             } else
             {
+                string hour = str_date_from_sql.ToString()[11].ToString();
+                int min_index = 13;
+                if (str_date_from_sql.ToString()[12] != ':')
+                {
+                    hour += str_date_from_sql.ToString()[12].ToString();
+                    min_index++;
+                }
+
                 return new DateTime(
-                   year, month, day);
+                   year, month, day
+                   , int.Parse(hour)
+                    , int.Parse(
+                    str_date_from_sql.ToString()[min_index].ToString() +
+                    str_date_from_sql.ToString()[min_index + 1].ToString()
+                    )
+                    , int.Parse(
+                    str_date_from_sql.ToString()[min_index + 3].ToString() +
+                    str_date_from_sql.ToString()[min_index + 4].ToString()
+                    )
+                   );
             }
         }
 
