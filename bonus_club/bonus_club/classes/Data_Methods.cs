@@ -11,6 +11,11 @@ namespace bonus_club
     {
         public static DateTime date_time_from_str_sql(string str_date_from_sql, bool ret_date = true)
         {
+            if (str_date_from_sql.Length < 3)
+            {
+                return new DateTime(1900, 1, 1, 10, 10, 10);
+            }
+
             int year = int.Parse(
                 str_date_from_sql.ToString()[6].ToString() +
                 str_date_from_sql.ToString()[7].ToString() +
